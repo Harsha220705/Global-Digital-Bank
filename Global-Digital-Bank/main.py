@@ -21,7 +21,7 @@ def main():
             account_type = input("Enter account type (Savings/Current): ")
             pin = input("Set a 4-digit PIN for your account: ")
             time_generated  = datetime.datetime.now()
-            
+
             Account.create_account(name,age,initial_deposit,account_type,pin,time_generated)
         elif choice == 2:
             Account.deposit()
@@ -42,6 +42,7 @@ def main():
             break
         else:
             print("Invalid choice. Please enter a number between 1 and 9.")
+            print("new one is loading")
 
 
 
