@@ -1,50 +1,50 @@
-from src.models.accounts import Account
-import datetime
-def main():
-    while True:
-        print("--- Welcome to Global Digital Bank ---")
-        print("\n1) Create Account \n2) Deposit \n3) Withdraw \n4) Check Balance \n5) Close Account \n6) List All Active Accounts \n7) Transfer Funds \n8) Transaction History \n9) Exit")
-        try:
-            choice = int(input("Enter your choice: "))
-            choice = int(choice)
-        except ValueError:
-            print("Invalid input. Please enter a number between 1 and 9.")
-            continue
-        except KeyboardInterrupt:
-            print("\nExiting the application.")
-            break
-        if choice == 1:
-            print("Creating a new account...")
-            name = input("Enter your Account Holder Name: ")
-            age = int(input("Enter your Age: "))
-            initial_deposit = float(input("Enter initial deposit amount: "))
-            account_type = input("Enter account type (Savings/Current): ")
-            pin = input("Set a 4-digit PIN for your account: ")
-            time_generated  = datetime.datetime.now()
+# Entry point of application so keep it as small as possible
 
-            Account.create_account(name,age,initial_deposit,account_type,pin,time_generated)
-        elif choice == 2:
-            Account.deposit()
-        elif choice == 3:
-            Account.withdraw()
-        elif choice == 4:
-            Account.check_balance()
-        elif choice == 5:
-            Account.close_account()
-        elif choice == 6:
-            Account.list_active_accounts()
-        elif choice == 7:
-            Account.transfer_funds()
-        elif choice == 8:
-            Account.transaction_history()
-        elif choice == 9:
-            print("Thank you for using Global Digital Bank. Goodbye!")
+from src.services.banking_service import BankingService
+
+def main():
+    bank=BankingService()
+    print("Welcome to Global Digital Bank")
+
+    while True:
+        print("\n----Main Menu---\n1. Create Account\n2. Deposit\n3. Withdraw\n4. Balance Enquiry\n5. Close Account\n6. Exit")
+        choice = input("Enter your choice: ")
+        if choice == '1':
+            name = input("Enter your name: ")
+            age = input("Enter your age: ")
+            account_type = input("Enter account type (Savings/Current): ")
+            initial_deposit = input("Enter initial deposit amount: ")
+            acc, msg = bank.create_account(name, age, account_type, initial_deposit)
+            if acc:
+                print(f"Account created successfully! Your account number is {acc.account_number}")
+            else:
+                print(f"Failed to create account: {msg}")
+        elif choice == '2':
+            acc_no = input("Enter your account number: ")
+            amount = float(input("Enter amount to deposit: "))
+            ok, msg = bank.deposit(acc_no, amount)
+            print(msg)
+        elif choice == '3':
+            acc_no = input("Enter your account number: ")
+            amount = float(input("Enter amount to withdraw: "))
+            ok, msg = bank.withdraw(acc_no, amount)
+            print(msg)
+        elif choice == '4':
+            acc_no = input("Enter your account number: ")
+            acc, msg = bank.balance_inquiry(acc_no)
+            if acc:
+                print(msg)
+            else:
+                print(f"Error: {msg}")
+        elif choice == '5':
+            acc_no = input("Enter your account number: ")
+            ok, msg = bank.close_account(acc_no)
+            print(msg)
+        elif choice == '6':
+            print("Thank you for banking with us. Goodbye!")
             break
         else:
-            print("Invalid choice. Please enter a number between 1 and 9.")
-            print("new one is loading")
-
-
+            print("Invalid choice. Please try again.")
 
 if __name__ == "__main__":
     main()
