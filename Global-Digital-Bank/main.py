@@ -89,7 +89,7 @@ def main():
             break
         elif choice == '7':   # Admin section
             password = input("Enter admin password: ")
-            if password == "admin123":   # 🔒 replace with better security later
+            if password == "admin123":   # replace with better security later
                 admin = AdminService(bank)
                 while True:
                     print("\n----Admin Menu---\n1. View all accounts\n2. Search account\n3. Reactivate account\n4. Force close account\n5. Back to Main Menu")
