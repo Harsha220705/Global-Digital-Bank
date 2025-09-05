@@ -1,13 +1,13 @@
 # Entry point of application so keep it as small as possible
 import sys
 from src.services.banking_service import BankingService,AgeRestrictionError,AccountNotFoundError,InsufficientFundsError,InactiveAccountError
-
+from src.services.admin_services import AdminService
 def main():
     bank=BankingService()
     print("Welcome to Global Digital Bank")
 
     while True:
-        print("\n----Main Menu---\n1. Create Account\n2. Deposit\n3. Withdraw\n4. Balance Enquiry\n5. Close Account\n6. Exit")
+        print("\n----Main Menu---\n1. Create Account\n2. Deposit\n3. Withdraw\n4. Balance Enquiry\n5. Close Account\n6. Exit \n7. Admin Login")
         choice = input("Enter your choice: ")
         if choice == '1':
             try:
@@ -87,6 +87,31 @@ def main():
         elif choice == '6':
             print("Thank you for banking with us. Goodbye!")
             break
+        elif choice == '7':   # Admin section
+            password = input("Enter admin password: ")
+            if password == "admin123":   # 🔒 replace with better security later
+                admin = AdminService(bank)
+                while True:
+                    print("\n----Admin Menu---\n1. View all accounts\n2. Search account\n3. Reactivate account\n4. Force close account\n5. Back to Main Menu")
+                    admin_choice = input("Enter your choice: ")
+
+                    if admin_choice == '1':
+                        print(admin.view_all_accounts())
+                    elif admin_choice == '2':
+                        acc_no = input("Enter account number: ")
+                        print(admin.search_account(acc_no))
+                    elif admin_choice == '3':
+                        acc_no = input("Enter account number to reactivate: ")
+                        print(admin.reactivate_account(acc_no))
+                    elif admin_choice == '4':
+                        acc_no = input("Enter account number to close: ")
+                        print(admin.force_close_account(acc_no))
+                    elif admin_choice == '5':
+                        break
+                    else:
+                        print("Invalid choice.")
+            else:
+                print("Access denied. Wrong password.")
         else:
             print("Invalid choice. Please try again.")
 
