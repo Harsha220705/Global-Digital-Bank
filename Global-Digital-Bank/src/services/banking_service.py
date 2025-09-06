@@ -36,7 +36,6 @@ class BankingService:
             raise AgeRestrictionError(age)
             
 
-        # Normalize account type (capitalize first letter)
         account_type = account_type.title()
         if account_type not in Account.MIN_BALANCE:
             # check if account type is valid
@@ -48,7 +47,7 @@ class BankingService:
         acc_no = self.next_account_number
         acc = Account(acc_no, name,age, account_type, balance=float(intial_deposit))
         self.accounts[acc_no] = acc
-        # 1001, 10002, 1003
+        
         self.next_account_number += 1
 
 

@@ -89,24 +89,33 @@ def main():
             break
         elif choice == '7':   # Admin section
             password = input("Enter admin password: ")
-            if password == "admin123":   # replace with better security later
+            if password == "admin123": 
                 admin = AdminService(bank)
                 while True:
-                    print("\n----Admin Menu---\n1. View all accounts\n2. Search account\n3. Reactivate account\n4. Force close account\n5. Back to Main Menu")
+                    print("\n----Admin Menu---\n1. View all accounts\n2. Search account by name   \n 3.Search by Account number \n4. Reactivate account\n5. Force close account\n6. Back to Main Menu")
                     admin_choice = input("Enter your choice: ")
 
                     if admin_choice == '1':
                         print(admin.view_all_accounts())
                     elif admin_choice == '2':
-                        acc_no = input("Enter account number: ")
-                        print(admin.search_account(acc_no))
-                    elif admin_choice == '3':
+                        name = input("Enter account holder name: ")
+                        try:
+                            print(admin.search_by_name(name))   # ✅ now using search_by_name
+                        except AccountNotFoundError as e:
+                            print(str(e))
+                    elif admin_choice =='3':
+                        acc_no =input("enter the accout number")
+                        try:
+                            print(admin.search_by_account_number(acc_no))
+                        except AccountNotFoundError as e:
+                            print(str(e))
+                    elif admin_choice == '4':
                         acc_no = input("Enter account number to reactivate: ")
                         print(admin.reactivate_account(acc_no))
-                    elif admin_choice == '4':
+                    elif admin_choice == '5':
                         acc_no = input("Enter account number to close: ")
                         print(admin.force_close_account(acc_no))
-                    elif admin_choice == '5':
+                    elif admin_choice == '6':
                         break
                     else:
                         print("Invalid choice.")
