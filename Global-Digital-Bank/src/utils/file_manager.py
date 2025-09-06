@@ -2,13 +2,13 @@ import csv
 from src.models.account import Account
 from datetime import datetime
 
-ACCOUNT_FILE = "Global-Digital-Bank/data/accounts.csv"
-TRANSACTIONS_FILE = "Global-Digital-Bank/data/transactions.log"
+ACCOUNT_FILE = "/Users/harshahs/Desktop/global_digital_bank/Global-Digital_Bank/Global-Digital-Bank/Global-Digital-Bank/data/accounts.csv"
+TRANSACTIONS_FILE = "/Users/harshahs/Desktop/global_digital_bank/Global-Digital_Bank/Global-Digital-Bank/Global-Digital-Bank/data/transactions.log"
 
 def save_accounts(accounts):
     with open(ACCOUNT_FILE, "w", newline="") as f:
         writer = csv.writer(f)
-        writer.writerow(["account_number", "name", "age", "balance", "account_type", "status", "pin"])
+        writer.writerow(["account_number", "name", "age", "balance", "account_type", "status", "time","pin"])
         for acc in accounts.values():
             d = acc.to_dict()
             writer.writerow(
@@ -19,6 +19,7 @@ def save_accounts(accounts):
                     d["balance"],
                     d["account_type"],
                     d["status"],
+                    d['timestamp'],
                     d["pin"]
                     ])
 
@@ -36,6 +37,7 @@ def load_accounts():
                     account_type=row["account_type"],
                     balance=row["balance"],
                     status=row["status"],
+                    timestamp=row["time"] if row["time"] else None,
                     pin=row["pin"] if row["pin"] else None
                 )
                 accounts[acc.account_number] = acc

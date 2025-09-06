@@ -1,5 +1,6 @@
 # Entry point of application so keep it as small as possible
 import sys
+import time
 from src.services.banking_service import BankingService,AgeRestrictionError,AccountNotFoundError,InsufficientFundsError,InactiveAccountError
 from src.services.admin_services import AdminService
 def main():
@@ -7,7 +8,7 @@ def main():
     print("Welcome to Global Digital Bank")
 
     while True:
-        print("\n----Main Menu---\n1. Create Account\n2. Deposit\n3. Withdraw\n4. Balance Enquiry\n5. Close Account\n6. Exit \n7. Admin Login")
+        print("\n----Main Menu---\n1. Create Account\n2. Deposit\n3. Withdraw\n4. Balance Enquiry\n5. Close Account\n6. Account Rename \n7. Exit \n8. Admin Login")
         choice = input("Enter your choice: ")
         if choice == '1':
             try:
@@ -16,7 +17,7 @@ def main():
                 account_type = input("Enter account type (Savings/Current): ")
                 initial_deposit = input("Enter initial deposit amount: ")
                 
-                acc, msg = bank.create_account(name, age, account_type, initial_deposit)
+                acc, msg = bank.create_account(name, age, account_type, initial_deposit,timestamp=time.strftime("%Y-%m-%d %H:%M:%S"))
                 if acc:
                     print(f"Account created successfully! Your account number is {acc.account_number}")
                 else:
@@ -78,16 +79,21 @@ def main():
         elif choice == '5':
             try:
                 acc_no = input("Enter your account number: ")
-                ok, msg = bank.close_account(acc_no)
+                ok, msg = bank.terminate_account(acc_no)
                 print(msg)
-            except AccountNotFoundError as e:
-                print(f"Close account failed: Account {e.account_number} not found.")
             except Exception as e:
-                print(f"Unexpected error: {str(e)}")
+                print(f"Error: {str(e)}")
         elif choice == '6':
+            try:
+                acc_no = input("Enter your account number: ")
+                ok, msg = bank.account_rename(acc_no)
+            except Exception as e:
+                print(f"Error: {str(e)}")
+
+        elif choice == '7':
             print("Thank you for banking with us. Goodbye!")
             break
-        elif choice == '7':   # Admin section
+        elif choice == '8':   # Admin section
             password = input("Enter admin password: ")
             if password == "admin123": 
                 admin = AdminService(bank)

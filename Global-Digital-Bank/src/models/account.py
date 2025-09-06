@@ -9,7 +9,7 @@ class Account:
                  account_type,
                  balance = 0.0,
                  status = "Active",
-                 pin = None):
+                 timestamp=None,pin=None):
         
         self.account_number = int(account_number)
         self.name = name.strip()
@@ -19,6 +19,10 @@ class Account:
             raise ValueError(f"Invalid account type: {self.account_type}")
         self.balance = float(balance)
         self.status = status
+        self.timestamp = timestamp if timestamp else None
+         # account creation time
+         # can be used for interest calculation later
+            # or account age verification
         self.pin = pin
 
     def deposit(self, amount):
@@ -51,6 +55,7 @@ class Account:
         if amount <= 0:
             return False, "Withdrawal must be positive"
         
+
         min_required = Account.MIN_BALANCE[self.account_type]
         if round(self.balance - amount, 2) < min_required:
             return False, f"Insufficient funds. Minimum required balance for {self.account_type}: {min_required}"
@@ -67,6 +72,7 @@ class Account:
             "balance": self.balance,
             "account_type": self.account_type,
             "status": self.status,
+            "timestamp": self.timestamp if self.timestamp else "",
             "pin": self.pin if self.pin else "", 
         }
     

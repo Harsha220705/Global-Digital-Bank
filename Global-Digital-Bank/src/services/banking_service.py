@@ -2,6 +2,7 @@
 # It acts as the middle layer between  the Account model (business rules)
 # and file_manager utilities (storage and logging).
 from src.models.account import Account
+import time,datetime
 from  src.utils.file_manager import load_accounts, save_accounts, log_transaction
 class BankingService:
     START_ACCOUNT_NO = 1001
@@ -27,7 +28,7 @@ class BankingService:
         save_accounts(self.accounts)
     
     @autosave
-    def create_account(self, name,age, account_type, intial_deposit=0):
+    def create_account(self, name,age, account_type, intial_deposit=0,timestamp=None):
         # ---- Basic Validation Checks ----
         if not name.strip():
             return None, "Name cannot be empty"
@@ -45,7 +46,7 @@ class BankingService:
             return None, f"Intial deposit must be at least {min_req}"
        
         acc_no = self.next_account_number
-        acc = Account(acc_no, name,age, account_type, balance=float(intial_deposit))
+        acc = Account(acc_no, name,age, account_type, balance=float(intial_deposit),timestamp=timestamp)
         self.accounts[acc_no] = acc
         
         self.next_account_number += 1
@@ -85,6 +86,28 @@ class BankingService:
             log_transaction(acc.account_number, "WITHDRAW", amount, acc.balance)
             self.save_to_disk()
         return ok, msg
+    @autosave
+    def terminate_account(self, account_number):
+        acc = self.get_account(account_number)
+        if not acc:
+            raise AccountNotFoundError(f"Account {account_number} not found.")
+        if acc.status != "Active":
+            raise InactiveAccountError(account_number)
+
+        # Force withdraw everything without min balance check so no need to have min balance check
+        if acc.balance > 0:
+            withdrawn_amount = acc.balance
+            acc.balance = 0
+            log_transaction(acc.account_number, "WITHDRAW_FULL", None, withdrawn_amount)
+
+        # close account
+        acc.status = "Inactive"
+        log_transaction(acc.account_number, "CLOSE", None, 0)
+        self.save_to_disk()
+        return True, "Account closed successfully"
+
+        
+    
    
     def balance_inquiry(self, account_number):
         acc = self.get_account(account_number)
@@ -102,6 +125,17 @@ class BankingService:
          log_transaction(acc.account_number, "CLOSE" , None, acc.balance)
          self.save_to_disk()
          return True , "Account closed succesfully"
+    @autosave
+    def account_rename(self, account_number):
+         acc = self.get_account(account_number)
+         if not acc:
+            raise AccountNotFoundError(f"Account {account_number} not found.")
+         new_name = input("Enter new name: ").strip()
+         if not new_name:
+            return False, "Name cannot be empty"
+         acc.name = new_name
+         self.save_to_disk()
+         return True , f"Account renamed successfully to {new_name}"
 class AgeRestrictionError(Exception):
     def __init__(self, age, message="Age must be 18 or above to create an account"):
         self.age = age
