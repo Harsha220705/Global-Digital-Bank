@@ -3,55 +3,56 @@ import sys
 import time
 from src.services.banking_service import BankingService,AgeRestrictionError,AccountNotFoundError,InsufficientFundsError,InactiveAccountError
 from src.utils.file_manager import read_user_transactions
-def user_menu():
+from src.services.loan_services import LoanService
+def user_menu(account_number=None):
     bank=BankingService()
+    loan_service = LoanService()
     print("Welcome to Global Digital Bank")
+    
+    # If no account number provided, ask for it (for backward compatibility)
+    if not account_number:
+        account_number = input("Enter your account number: ")
 
     while True:
-        print("\n---- Main Menu ----")
-        print("1. Create Account")
-        print("2. Deposit")
-        print("3. Withdraw")
-        print("4. Balance Enquiry")
-        print("5. Close Account")
-        print("6. Account Rename")
-        print("7. Account Type Upgrade")
-        print("8. Reopen Closed Account")
-        print("9. Minimum Balance Check")
-        print("10. Simple Interest Calculator")
-        print("11. Daily Transaction Limit")
-        print("12. Transfer Funds")
-        print("13. Average Balance Calculator")
-        print("14. Set PIN / Password")
-        print("15. Verify PIN / Password")
-        print("16. Exit")
+        print("\n====== Main Menu =======")
+        print("1. Deposit")
+        print("2. Withdraw")
+        print("3. Balance Enquiry")
+        print("4. Close Account")
+        print("5. Account Rename")
+        print("6. Account Type Upgrade")
+        print("7. Reopen Closed Account")
+        print("8. Minimum Balance Check")
+        print("9. Simple Interest Calculator (Savings : 7.5% , Current : 9.5%)")
+        print("10. Daily Transaction Limit")
+        print("11. Transfer Funds")
+        print("12. Average Balance Calculator")
+        print("13. Take Loan")
+        print("14. Loan Details")
+        print("15. Exit")
         choice = input("Enter your choice: ")
+          
         if choice == '1':
             try:
-                name = input("Enter your name: ")
-                age = input("Enter your age: ")
-                account_type = input("Enter account type (Savings/Current): ")
-                initial_deposit = input("Enter initial deposit amount: ")
+                pin = input("Enter your PIN: ")
                 
-                acc, msg = bank.create_account(name, age, account_type, initial_deposit,timestamp=time.strftime("%Y-%m-%d %H:%M:%S"))
-                if acc:
-                    print(f"Account created successfully! Your account number is {acc.account_number}")
-                else:
-                    print(f"Failed to create account: {msg}")
-
-            except AgeRestrictionError as e:
-                print(f"Failed to create account: {e.message} (Provided age: {e.age})")
-
-            except Exception as e:
-                print(f"Error: {str(e)}")
-            
-        elif choice == '2':
-            try:
-                acc_no = input("Enter your account number: ")
+                # Verify PIN before deposit
+                if not bank.verify_pin(account_number, pin):
+                    print("Invalid PIN. Deposit cancelled.")
+                    continue
+                
                 amount = float(input("Enter amount to deposit: "))
-
-                ok, msg = bank.deposit(acc_no, amount)
-                print(msg)
+                mode = input("Is this deposit for Loan Repayment? (Y/N): ").strip().lower()
+                if mode == 'y':
+                    ok_r, msg_r, applied = loan_service.repay(int(account_number), amount)
+                    print(msg_r)
+                    remainder = round(amount - applied, 2)
+                    if remainder > 0:
+                        ok, msg = bank.deposit(account_number, remainder)
+                        print(msg)
+                else:
+                    ok, msg = bank.deposit(account_number, amount)
+                    print(msg)
 
             except ValueError:
                 print("Invalid amount. Please enter a numeric value.")
@@ -63,12 +64,20 @@ def user_menu():
                 print(str(e))
             except Exception as e:
                 print(f"Unexpected error: {str(e)}")
+            print("Loading...")
+            time.sleep(3)
 
-        elif choice == '3':
+        elif choice == '2':
             try:
-                acc_no = input("Enter your account number: ")
+                pin = input("Enter your PIN: ")
+                
+                # Verify PIN before withdrawal
+                if not bank.verify_pin(account_number, pin):
+                    print("Invalid PIN. Withdrawal cancelled.")
+                    continue
+                
                 amount = float(input("Enter amount to withdraw: "))
-                ok, msg = bank.withdraw(acc_no, amount)
+                ok, msg = bank.withdraw(account_number, amount)
                 print(msg)
             except ValueError:
                 print("Invalid amount. Please enter a numeric value.")
@@ -80,48 +89,54 @@ def user_menu():
                 print(str(e))
             except Exception as e:
                 print(f"Unexpected error: {str(e)}")
-        elif choice == '4':
+            print("Loading...")
+            time.sleep(3)
+        elif choice == '3':
             try:
-                acc_no = input("Enter your account number: ")
-                acc, msg = bank.balance_inquiry(acc_no)
+                acc, msg = bank.balance_inquiry(account_number)
                 if acc:
                     print(msg)
             except AccountNotFoundError as e:
                 print(f"Balance enquiry failed: Account {e.account_number} not found.")
             except Exception as e:
                 print(f"Unexpected error: {str(e)}")
+            print("Loading...")
+            time.sleep(3)
             
             
-        elif choice == '5':
+        elif choice == '4':
             try:
-                acc_no = input("Enter your account number: ")
-                ok, msg = bank.terminate_account(acc_no)
+                ok, msg = bank.terminate_account(account_number)
                 print(msg)
             except Exception as e:
                 print(f"Error: {str(e)}")
-        elif choice == '6':
+            print("Loading...")
+            time.sleep(3)
+        elif choice == '5':
             try:
-                acc_no = input("Enter your account number: ")
-                ok, msg = bank.account_rename(acc_no)
+                ok, msg = bank.account_rename(account_number)
             except Exception as e:
                 print(f"Error: {str(e)}")
-        elif choice == '7':
-            acc_no = input("Enter account number: ")
+            print("Loading...")
+            time.sleep(3)
+        elif choice == '6':
             new_type = input("New type (Savings/Current): ")
-            ok, msg = bank.upgrade_account_type(acc_no, new_type)
+            ok, msg = bank.upgrade_account_type(account_number, new_type)
             print(msg)
+            print("Loading...")
+            time.sleep(3)
+        elif choice == '7':
+            ok, msg = bank.reopen_account(account_number)
+            print(msg)
+            print("Loading...")
+            time.sleep(3)
         elif choice == '8':
-            acc_no = input("Enter account number to reopen: ")
-            ok, msg = bank.reopen_account(acc_no)
-            print(msg)
-        elif choice == '9':
-            acc_no = input("Enter account number: ")
             try:
                 amount = float(input("Enter hypothetical withdrawal amount: "))
             except ValueError:
                 print("Invalid amount.")
                 continue
-            acc = bank.get_account(acc_no)
+            acc = bank.get_account(account_number)
             if not acc:
                 print("Account not found.")
                 continue
@@ -131,23 +146,38 @@ def user_menu():
                 print(f"Would fail: minimum required balance for {acc.account_type} is {min_req}. Projected: {projected}")
             else:
                 print(f"OK: projected balance after withdrawal = {projected}")
-        elif choice == '10':
-            acc_no = input("Enter account number: ")
-            rate = input("Enter annual rate %: ")
+            print("Loading...")
+            time.sleep(3)
+        elif choice == '9':
             years = input("Enter number of years: ")
-            ok, msg = bank.calculate_simple_interest(acc_no, rate, years)
+            # Get account to determine rate
+            acc = bank.get_account(account_number)
+            if not acc:
+                print("Account not found.")
+                continue
+            # Fixed rates based on account type
+            if acc.account_type == "Savings":
+                rate = "7.5"
+            elif acc.account_type == "Current":
+                rate = "9.5"
+            else:
+                rate = "7.5"  # default
+            print(f"Interest rate for {acc.account_type} account: {rate}% per annum")
+            ok, msg = bank.calculate_simple_interest(account_number, rate, years)
             print(msg)
-        elif choice == '11':
-            acc_no = input("Enter account number: ")
+            print("Loading...")
+            time.sleep(3)
+        elif choice == '10':
             try:
-                dep_used = bank._get_today_total(int(acc_no), "DEPOSIT")
-                wit_used = bank._get_today_total(int(acc_no), "WITHDRAW")
+                dep_used = bank._get_today_total(int(account_number), "DEPOSIT")
+                wit_used = bank._get_today_total(int(account_number), "WITHDRAW")
                 print(f"Deposit remaining today: {bank.DAILY_DEPOSIT_LIMIT - dep_used}")
                 print(f"Withdraw remaining today: {bank.DAILY_WITHDRAW_LIMIT - wit_used}")
             except Exception:
                 print("Could not compute daily limits.")
-        elif choice == '12':
-            from_acc = input("From account: ")
+            print("Loading...")
+            time.sleep(3)
+        elif choice == '11':
             to_acc = input("To account: ")
             # Show receiver details for verification
             recv = bank.get_account(to_acc)
@@ -162,31 +192,50 @@ def user_menu():
             # Ask for PIN on sender account
             pin = input("Enter your PIN: ")
             try:
-                if not bank.verify_pin(from_acc, pin):
+                if not bank.verify_pin(account_number, pin):
                     print("Invalid PIN. Transfer cancelled.")
                     continue
             except AccountNotFoundError as e:
                 print(str(e))
                 continue
             amount = input("Amount: ")
-            ok, msg = bank.transfer_funds(from_acc, to_acc, amount)
+            ok, msg = bank.transfer_funds(account_number, to_acc, amount)
             print(msg)
-        elif choice == '13':
+            print("Loading...")
+            time.sleep(3)
+        elif choice == '12':
             print(f"Average balance: {bank.average_balance()}")
-        elif choice == '14':
-            acc_no = input("Enter account number: ")
-            pin = input("Set new PIN: ")
-            ok, msg = bank.set_pin(acc_no, pin)
-            print(msg)
-        elif choice == '15':
-            acc_no = input("Enter account number: ")
-            pin = input("Enter PIN: ")
+            print("Loading...")
+            time.sleep(3)
+        elif choice == '13':
+            # Take Loan
+            acc = bank.get_account(account_number)
+            if not acc:
+                print("Account not found.")
+                continue
+            print(f"Eligible limit for {acc.account_type}: ₹{LoanService.get_max_limit_for_account_type(acc.account_type):,.0f}")
+            amount = input("Enter loan amount: ")
+            years = input("Choose tenure (3 or 4 years): ")
             try:
-                is_ok = bank.verify_pin(acc_no, pin)
-                print("PIN correct" if is_ok else "Invalid PIN")
-            except AccountNotFoundError as e:
-                print(str(e))
-        elif choice == '16':
+                ok, msg, record = loan_service.take_loan(acc, float(amount), int(years))
+                print(msg)
+                if ok and record:
+                    # Credit principal to user's balance bypassing daily limit
+                    okd, msgd = bank.credit_loan_disbursal(account_number, record["principal"])
+                    print(f"Loan amount credited to your account. {msgd}")
+            except Exception as e:
+                print(f"Error: {str(e)}")
+            print("Loading...")
+            time.sleep(3)
+        elif choice == '14':
+            # Loan Details
+            try:
+                print(loan_service.details(int(account_number)))
+            except Exception as e:
+                print(f"Error: {str(e)}")
+            print("Loading...")
+            time.sleep(3)
+        elif choice == '15':
             print("Thank you for banking with us. Goodbye!")
             break
         else:

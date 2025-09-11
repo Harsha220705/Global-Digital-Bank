@@ -104,16 +104,16 @@ class AdminService:
     def count_active_accounts(self):
         return sum(1 for acc in self.bank.accounts.values() if acc.status == "Active")
 
-    @BankingService.autosave
     def delete_all_accounts(self):
         self.bank.accounts.clear()
+        self.bank.save_to_disk()   # ✅ call save from BankingService
         log_admin_action("DELETE_ALL_ACCOUNTS")
         return "All accounts deleted."
 
     def system_exit_with_autosave(self):
         self.bank.save_to_disk()
         log_admin_action("SYSTEM_EXIT_WITH_AUTOSAVE")
-        return "Changes saved. Exiting admin."
+        return "Changes saved"
 
     @BankingService.autosave
     def import_accounts_from_file(self, import_path):

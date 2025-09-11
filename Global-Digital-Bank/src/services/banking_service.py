@@ -84,6 +84,28 @@ class BankingService:
             self.save_to_disk()
     
         return ok, msg
+
+    @autosave
+    def credit_loan_disbursal(self, account_number, amount):
+        """Credit loan amount to balance bypassing daily deposit limit.
+
+        Logs as LOAN_CREDIT.
+        """
+        acc = self.get_account(account_number)
+        if not acc:
+            raise AccountNotFoundError(f"Account {account_number} not found.")
+        if acc.status != "Active":
+            raise InactiveAccountError(f"Account {account_number} is not active.")
+        try:
+            amt_f = float(amount)
+        except (TypeError, ValueError):
+            amt_f = 0.0
+        if amt_f <= 0:
+            return False, "Invalid amount."
+        acc.balance += amt_f
+        log_transaction(acc.account_number, "LOAN_CREDIT", amt_f, acc.balance)
+        self.save_to_disk()
+        return True, f"Loan amount credited. New Balance: {acc.balance:.2f}"
     @autosave
     def withdraw(self, account_number, amount):
         acc = self.get_account(account_number)
