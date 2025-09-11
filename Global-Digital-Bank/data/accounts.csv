@@ -49,3 +49,8 @@ account_number,name,age,balance,account_type,status,time,pin
 1048,Mila,28,4982.13,Savings,Active,2025-09-03 08:39:25,3416
 1049,Daniel,34,24652.22,Current,Inactive,2025-09-06 17:50:12,5071
 1050,Ella,29,16877.74,Savings,Active,2025-09-05 22:18:54,7635
+1051,Nandan,25,2000.0,Savings,Active,2025-09-09 15:17:57,1051
+1052,Nandan Naik,24,61500.0,Current,Active,2025-09-09 15:46:03,1052
+1053,Hulk,23,196000.0,Savings,Active,2025-09-10 07:18:46,1234
+1054,Iron Man,25,400000.0,Current,Active,2025-09-10 23:38:30,1052
+1055,Captain America,26,2810000.0,Current,Active,2025-09-10 23:39:54,1055
